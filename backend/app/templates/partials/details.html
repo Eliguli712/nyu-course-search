@@ -1,0 +1,21 @@
+<div class="details-panel">
+  {% if details.found %}
+    <div class="panel-head">
+      <span class="panel-label">{{ details.term }}</span>
+      <a class="text-link" href="{{ details.url }}" target="_blank" rel="noreferrer">Open in Bulletin ↗</a>
+    </div>
+    {% if details.snippet_html %}
+      <div style="margin-top:8px;font-size:0.79rem;line-height:1.6;color:var(--muted);">
+        {{ details.snippet_html | safe }}
+      </div>
+    {% else %}
+      <p style="margin-top:6px;font-size:0.79rem;">Found, but no snippet available — use the link above.</p>
+    {% endif %}
+  {% else %}
+    <div class="panel-head">
+      <span class="panel-label" style="color:var(--muted);">No recent offering found</span>
+      <a class="text-link" href="{{ details.url }}" target="_blank" rel="noreferrer">Try in Bulletin ↗</a>
+    </div>
+    <p style="margin-top:6px;font-size:0.79rem;">May not be offered recently, or Bulletin search didn't return it.</p>
+  {% endif %}
+</div>

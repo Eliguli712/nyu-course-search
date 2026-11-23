@@ -1,0 +1,11 @@
+{% if done %}
+  <button class="btn-ghost thumbed" disabled>✓ Upvoted</button>
+{% else %}
+  <button class="btn-ghost"
+    hx-post="/thumb/{{ course_id }}"
+    hx-vals='{"search_id": "{{ search_id }}", "rank": "{{ thumb_rank if thumb_rank is defined else 0 }}"}'
+    hx-target="this"
+    hx-swap="outerHTML">
+    ↑ Upvote
+  </button>
+{% endif %}

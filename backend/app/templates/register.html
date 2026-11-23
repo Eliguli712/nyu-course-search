@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="card">
+    <h1 class="headline subheadline">Create <em>account</em></h1>
+    <p style="margin-top:6px;font-size:0.83rem;color:var(--muted);">Requires an @nyu.edu email address.</p>
+
+    {% if error %}<div class="alert-error">{{ error }}</div>{% endif %}
+
+    <form method="post" action="/register" class="form-stack">
+      <div>
+        <label class="field-label">NYU Email</label>
+        <input name="email" type="email" class="field-input" placeholder="netid@nyu.edu" required>
+      </div>
+      <div>
+        <label class="field-label">Password</label>
+        <input name="password" type="password" class="field-input" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn-primary btn-full" style="margin-top:4px;">Create account →</button>
+    </form>
+    <p style="margin-top:16px;font-size:0.81rem;color:var(--muted);">
+      Have an account?
+      <a href="/login" style="color:var(--amber);text-decoration:underline;text-underline-offset:3px;">Sign in</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

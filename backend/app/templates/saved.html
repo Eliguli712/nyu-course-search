@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <div class="page-head">
+    <h1 class="headline subheadline">Saved <em>courses</em></h1>
+    <a href="/" class="text-link">← Back to search</a>
+  </div>
+
+  {% if not courses %}
+    <p class="empty-state">NO SAVED COURSES YET</p>
+  {% else %}
+    <p style="font-family:var(--font-mono);font-size:0.68rem;letter-spacing:0.06em;color:var(--muted);margin-bottom:16px;">
+      {{ courses|length }} COURSE{% if courses|length != 1 %}S{% endif %} SAVED
+    </p>
+    <div class="results-list">
+    {% for c in courses %}
+      <div class="course-card" style="--i:{{ loop.index0 }}">
+        <div class="course-code">{{ c.code }}</div>
+        <div class="course-name">{{ c.name }}</div>
+        <p class="course-desc">{{ c.description[:260] }}{% if c.description|length > 260 %}…{% endif %}</p>
+        <div class="card-footer" style="margin-top:8px;">
+          <a class="text-link" href="{{ c.source_url }}" target="_blank" rel="noreferrer">↗ Bulletin listing</a>
+        </div>
+      </div>
+    {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

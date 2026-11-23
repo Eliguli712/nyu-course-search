@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1 class="headline">Find your next<br><em>NYU course.</em></h1>
+  <p style="margin-top:8px;font-size:0.84rem;color:var(--muted);max-width:54ch;line-height:1.65;">
+    Semantic search over all course descriptions, reranked by Chebyshev T₁–T₄ polynomial + PCCA cluster similarity.
+  </p>
+
+  <form class="search-form"
+        hx-post="/search"
+        hx-target="#results"
+        hx-swap="innerHTML"
+        hx-indicator="#search-spin">
+    <input name="q" value="{{ query }}"
+           class="search-input"
+           placeholder="e.g. probabilistic graphical models, compilers, Byzantine history…"
+           autocomplete="off" spellcheck="false">
+    <button type="submit" class="btn-primary">Search</button>
+    <div id="search-spin" class="htmx-indicator" style="padding:0 4px;">
+      <div class="spinner"></div>
+    </div>
+  </form>
+
+  <div id="results" style="margin-top:24px;">
+    {% if results %}
+      {% include "partials/results.html" %}
+    {% else %}
+      <p class="empty-state">AWAITING QUERY —</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,139 @@
+{% if not results %}
+  {% if error %}
+    <div style="padding:12px 14px;background:rgba(224,92,92,0.1);border:1px solid rgba(224,92,92,0.3);border-radius:8px;font-size:0.82rem;color:#e07878;">
+      {{ error }}
+    </div>
+  {% else %}
+    <p class="empty-state">NO RESULTS FOUND</p>
+  {% endif %}
+{% else %}
+  {# ── Meta bar ─────────────────────────────────────────────────────────── #}
+  <div class="results-meta">
+    <span><strong>{{ results|length }}</strong> results for &ldquo;{{ query }}&rdquo;</span>
+    <a href="/saved" class="text-link" style="font-family:var(--font-mono);font-size:0.7rem;">View saved →</a>
+  </div>
+
+  {# ── Score distribution bar chart ─────────────────────────────────────── #}
+  {% if scores %}
+  <div class="score-chart-wrap">
+    <div class="score-chart-label">Relevance distribution — click a bar to jump</div>
+    <div class="score-bars" id="dist-chart">
+      {% for c in results %}
+        {% set pct = ((scores.get(c.id, 0) * 100) | round(1)) %}
+        <div class="score-bar-col"
+             id="bar-{{ loop.index0 }}"
+             data-idx="{{ loop.index0 }}"
+             title="{{ c.code }}: {{ pct }}%"
+             onclick="scrollToCard({{ loop.index0 }})">
+          <div class="score-bar-fill"
+               style="height:{{ [pct, 2]|max }}%;
+                      background:{% if pct >= 70 %}var(--amber){% elif pct >= 45 %}var(--violet){% else %}var(--muted){% endif %};">
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:4px;font-family:var(--font-mono);font-size:0.58rem;color:var(--dim);">
+      <span>#1</span><span>#{{ results|length }}</span>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── Course cards ──────────────────────────────────────────────────────── #}
+  <div class="results-list" id="results-list">
+  {% for c in results %}
+    {% set raw_score = scores.get(c.id, 0) if scores else 0 %}
+    {% set pct = (raw_score * 100) | round(1) %}
+    {% set rank = loop.index0 %}
+
+    <div class="course-card" id="card-{{ loop.index0 }}" style="--i:{{ loop.index0 }}">
+
+      <div class="card-header">
+        <div class="card-meta">
+          <div class="course-code">{{ c.code }}</div>
+          <div class="course-name">{{ c.name }}</div>
+
+          {% if scores and c.id in scores %}
+          <div class="score-row">
+            <span class="score-badge">
+              RELEVANCE&nbsp;<strong>{{ pct }}%</strong>
+            </span>
+            <div class="score-track">
+              <div class="score-fill" style="width:{{ pct }}%;background:{% if pct >= 70 %}var(--amber){% elif pct >= 45 %}var(--violet){% else %}var(--muted){% endif %};"></div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="card-actions">
+          {% set saved = (c.id in saved_ids) %}
+          {% set done = False %}
+          {% set course_id = c.id %}
+          {% include "partials/save_button.html" %}
+          {# Pass rank and search_id explicitly for thumb button #}
+          {% set thumb_rank = loop.index0 %}
+          {% include "partials/thumb_button.html" %}
+        </div>
+      </div>
+
+      <p class="course-desc">{{ c.description[:320] }}{% if c.description|length > 320 %}…{% endif %}</p>
+
+      <div class="card-footer">
+        <a class="text-link" href="{{ c.source_url }}" target="_blank" rel="noreferrer">↗ Bulletin listing</a>
+        <button class="text-link"
+                hx-get="/course/{{ c.id }}/details"
+                hx-target="#details-{{ c.id }}"
+                hx-swap="innerHTML"
+                hx-indicator="#det-spin-{{ c.id }}">
+          Load schedule
+        </button>
+        <span id="det-spin-{{ c.id }}" class="htmx-indicator">
+          <div class="spinner spinner-sm"></div>
+        </span>
+      </div>
+
+      <div id="details-{{ c.id }}"></div>
+    </div>
+  {% endfor %}
+  </div>
+
+  {# ── Client-side: keyword highlight + chart sync ───────────────────────── #}
+  <script>
+  (function () {
+    const query = {{ query | tojson }};
+    const terms = query.trim().toLowerCase()
+      .split(/\s+/)
+      .filter(t => t.length > 2 && !/^(the|and|for|with|that|this|from|into|over|under|about)$/.test(t));
+
+    // Highlight query terms in descriptions
+    document.querySelectorAll('.course-desc').forEach(el => {
+      let html = el.textContent || '';
+      terms.forEach(term => {
+        const re = new RegExp('(' + term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+        html = html.replace(re, '<mark>$1</mark>');
+      });
+      el.innerHTML = html;
+    });
+
+    // Sync bar highlight as cards scroll into view
+    const cards = document.querySelectorAll('.course-card');
+    const bars  = document.querySelectorAll('.score-bar-col');
+    if (bars.length) {
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (!e.isIntersecting) return;
+          const idx = e.target.id.split('-')[1];
+          bars.forEach(b => b.classList.remove('highlighted'));
+          const bar = document.getElementById('bar-' + idx);
+          if (bar) bar.classList.add('highlighted');
+        });
+      }, { threshold: 0.5 });
+      cards.forEach(c => io.observe(c));
+    }
+  })();
+
+  function scrollToCard(idx) {
+    const el = document.getElementById('card-' + idx);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  </script>
+{% endif %}

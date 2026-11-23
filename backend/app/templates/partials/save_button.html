@@ -1,0 +1,6 @@
+<button class="btn-ghost {% if saved %}saved{% endif %}"
+  hx-post="/save/{{ course_id }}"
+  hx-target="closest .btn-ghost"
+  hx-swap="outerHTML">
+  {% if saved %}★ Saved{% else %}☆ Save{% endif %}
+</button>
